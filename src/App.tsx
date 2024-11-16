@@ -1,4 +1,3 @@
-import React from "react";
 import { CircuitBoard } from "lucide-react";
 import FaceAuth from "./components/FaceAuth"; // Importing FaceAuth component
 
