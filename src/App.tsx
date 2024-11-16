@@ -34,7 +34,7 @@ function App() {
             <div className="flex items-center justify-center gap-2 text-gray-600 mt-4">
               <CircuitBoard className="w-5 h-8" />
               <p className="text-lg">
-                Secure Encryption and Face Authentication Model
+                Secure Encryption and Authentication Model
               </p>
             </div>
           </div>
