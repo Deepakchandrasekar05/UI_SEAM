@@ -66,7 +66,7 @@ const FaceAuth: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
+    <div className="bg-gray-100 rounded-xl shadow-lg p-8 mb-8 border border-gray-200">
       <div className="max-w-md mx-auto space-y-6">
         <CameraView onCapture={handleAuthenticate} />
         <AuthStatus status={authStatus} message={statusMessage} />
