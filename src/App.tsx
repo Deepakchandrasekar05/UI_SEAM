@@ -1,4 +1,3 @@
-import React from "react";
 import { CircuitBoard } from "lucide-react";
 import FaceAuth from "./components/FaceAuth"; // Importing FaceAuth component
 
@@ -7,7 +6,7 @@ function App() {
     <div className="min-h-screen bg-white text-gray-900">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <div className="text-start mb-6">
             {/* Logo Section */}
             <div className="flex items-center justify-between mb-1">

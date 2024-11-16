@@ -62,7 +62,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
       {/* Button as long as the camera feed */}
       <button
         onClick={captureImage}
-        className="mt-5 bg-blue-500 text-white py-2 rounded-lg w-full max-w-[500px]"
+        className="mt-5 bg-green-600 text-white py-2 rounded-lg w-full max-w-[500px]"
       >
         Authenticate
       </button>
