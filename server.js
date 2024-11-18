@@ -1,37 +1,50 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import { fileURLToPath } from "url";
 
-// Use import.meta.url to get the current directory
-const __dirname = new URL(".", import.meta.url).pathname;
+// Resolve __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 1235;
+const PORT = 1234;
 
-// Enable CORS
+// Enable CORS for all origins
 app.use(cors({ origin: "*" }));
 
-// Serve static files for model
+// Middleware to serve static files from the web_model directory
 app.use(
   "/project/workspace/web_model",
   express.static(path.join(__dirname, "web_model"), {
-    setHeaders: (res, path) => {
-      // Set Cache-Control header for better caching in service workers
+    setHeaders: (res, filePath) => {
+      // Set Cache-Control for better caching in service workers
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     },
   })
 );
 
-// Test route
+// Root route for server testing
 app.get("/", (req, res) => {
   res.send(
-    "Server is running. Model available at /project/workspace/web_model/model.json"
+    "Server is running. Model is available at /project/workspace/web_model/model.json"
   );
 });
 
-// Catch all other routes to prevent unnecessary errors
+// Route to test loading the model.json file
 app.get("/test-model", (req, res) => {
-  res.sendFile(path.join(__dirname, "web_model", "model.json"));
+  const modelPath = path.join(__dirname, "web_model", "model.json");
+  res.sendFile(modelPath, (err) => {
+    if (err) {
+      console.error("Error sending model.json:", err);
+      res.status(404).send("Model file not found");
+    }
+  });
+});
+
+// Catch-all route to handle unsupported routes
+app.use((req, res) => {
+  res.status(404).send("Route not found. Please check your URL.");
 });
 
 // Start the server

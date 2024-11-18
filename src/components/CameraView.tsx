@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Camera, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  saveImageToIndexedDB,
+  getImageFromIndexedDB,
+} from "../utils/indexedDBHelper"; // Import IndexedDB helpers
 
 interface CameraViewProps {
   onCapture: (imageSrc: string) => void;
@@ -7,10 +11,12 @@ interface CameraViewProps {
 
 export const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null); // Captured image from camera
+  const [storedImage, setStoredImage] = useState<string | null>(null); // Image fetched from IndexedDB
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Start video feed from webcam
   useEffect(() => {
     const startVideo = async () => {
       try {
@@ -19,7 +25,6 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-
           videoRef.current.onloadedmetadata = () => {
             videoRef.current?.play();
             setIsReady(true); // Mark the camera feed as ready
@@ -32,9 +37,24 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
     };
 
     startVideo();
+
+    // Fetch stored image from IndexedDB when the component mounts
+    const fetchStoredImage = async () => {
+      try {
+        const image = await getImageFromIndexedDB("uploads"); // Use the same key used to store the image
+        if (image) {
+          setStoredImage(image); // Set the stored image in the state
+        }
+      } catch (err) {
+        console.error("Error fetching image from IndexedDB:", err);
+      }
+    };
+
+    fetchStoredImage();
   }, []);
 
-  const captureImage = () => {
+  // Capture image from video feed and save to IndexedDB
+  const captureImage = async () => {
     if (videoRef.current) {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
@@ -42,14 +62,17 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
         context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        setImageSrc(canvas.toDataURL("image/png"));
+        const base64Image = canvas.toDataURL("image/png");
+        setImageSrc(base64Image); // Set the captured image to display immediately
+        await saveImageToIndexedDB(base64Image, "uploads"); // Save the captured image to IndexedDB
+        alert("Image captured and stored successfully!");
       }
     }
   };
 
   useEffect(() => {
     if (imageSrc) {
-      onCapture(imageSrc);
+      onCapture(imageSrc); // Pass the captured image to the parent component
     }
   }, [imageSrc, onCapture]);
 
@@ -69,7 +92,6 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
             autoPlay
             className="rounded-lg border border-gray-300 shadow w-full h-64 object-cover"
           />
-
           {/* Check Circle when feed is ready */}
           {isReady && (
             <div className="absolute top-4 right-4">
@@ -79,7 +101,7 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
         </div>
       )}
 
-      {/* Button */}
+      {/* Capture Button */}
       <button
         onClick={captureImage}
         disabled={!isReady}
@@ -92,6 +114,33 @@ export const CameraView: React.FC<CameraViewProps> = ({ onCapture }) => {
         <Camera className="w-5 h-5" />
         <span>Authenticate</span>
       </button>
+
+      {/* Display Captured Image */}
+      <div className="mt-6 text-center">
+        {imageSrc ? (
+          <>
+            <h2 className="text-lg font-semibold mb-4">Captured Image</h2>
+            <img
+              src={imageSrc}
+              alt="Captured"
+              className="w-64 h-64 object-cover rounded border border-gray-300 shadow"
+            />
+          </>
+        ) : storedImage ? (
+          <>
+            <h2 className="text-lg font-semibold mb-4">
+              Stored Image from IndexedDB
+            </h2>
+            <img
+              src={storedImage}
+              alt="Fetched from IndexedDB"
+              className="w-64 h-64 object-cover rounded border border-gray-300 shadow"
+            />
+          </>
+        ) : (
+          <p>Face not detected yet. Please capture an image.</p>
+        )}
+      </div>
     </div>
   );
 };
